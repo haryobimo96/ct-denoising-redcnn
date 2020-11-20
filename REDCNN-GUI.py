@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Thu Nov 19 10:24:52 2020
 
-This is a temporary script file.
+@author: User
 """
 
 import tkinter as tk
 import pydicom as dicom
+import pickle
 import numpy as np
 import tensorflow as tf
 from PIL import ImageTk, Image
@@ -51,29 +52,48 @@ frame2 = tk.Frame(master=main_frame,
                   borderwidth=3)
 frame2.pack(fill=tk.X, side=tk.RIGHT)
 
+canvas2 = tk.Canvas(master=frame2,
+                    width=512,
+                    height=512)
+canvas2.pack()
+
 frame3 = tk.Frame(master=window,
                   width=1024,
                   height=100)
 frame3.pack(fill=tk.Y, side=tk.BOTTOM)
 
-image_id = canvas1.create_image(256,256)
+dicomarray = np.zeros((512,512))
 
-def open_file():
-    file_path = askopenfilename(
-        filetypes = [("DICOM Files","*.dcm"),("All Files","*.*")]
-        )
-    
-    if file_path:
+class Module():
+        
+    def open_file(self):
+        file_path = askopenfilename(
+            filetypes = [("DICOM Files","*.dcm"),("All Files","*.*")]
+            )
+        global imga
         ds = dicom.read_file(file_path)
         img = ds.pixel_array
         imga = ((img-np.min(img))/(np.max(img)-np.min(img)))*255
         canvas1.image_tk = ImageTk.PhotoImage(image=Image.fromarray(imga))
-        canvas1.itemconfigure(image_id, image=canvas1.image_tk)
+        canvas1.itemconfigure(canvas1.create_image(256,256), 
+                              image=canvas1.image_tk)
+        
+    def process(self):
+        canvas2.image_tk = ImageTk.PhotoImage(image=Image.fromarray(imga))
+        canvas2.itemconfigure(canvas2.create_image(256,256),
+                              image=canvas2.image_tk)
+
+M = Module()
 
 btn_open = tk.Button(master=frame3,
-                     text="Open",
-                     command=open_file)
+                     text="Open DICOM File",
+                     command=M.open_file)
 btn_open.place(x=25,y=50)
 
-window.mainloop()
+btn_process = tk.Button(master=frame3,
+                        text="Process",
+                        command=M.process)
+btn_process.place(x=150,y=50)
 
+
+window.mainloop()
